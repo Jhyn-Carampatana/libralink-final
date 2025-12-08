@@ -33,9 +33,11 @@ export function AdminFineCard({
     <Card className="glass-card p-4 hover:border-accent/50 transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-xl ${status === "paid" ? "bg-green-500/20" : "bg-red-500/20"}`}>
-            <DollarSign className={`w-6 h-6 ${status === "paid" ? "text-green-400" : "text-red-400"}`} />
-          </div>
+          <div className={`p-3 rounded-xl ${status === "paid" ? "bg-green-400/10" : "bg-red-400/10"}`}>
+  <span className={`text-2xl font-bold ${status === "paid" ? "text-green-400" : "text-red-400"}`}>
+    ₱
+  </span>
+</div>
 
           <div>
             <div className="flex items-center gap-2 mb-1">

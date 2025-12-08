@@ -51,7 +51,13 @@ export default async function LibrarianDashboard() {
               <StatCard title="Active Reservations" value={stats.activeReservations} icon={Clock} iconColor="text-yellow-400" />
             </Link>
             <Link href="/librarian/fines">
-              <StatCard title="Unpaid Fines" value={`₱${stats.unpaidFines.toFixed(2)}`} icon={DollarSign} iconColor="text-orange-400" />
+              <StatCard
+              title="Unpaid Fines"
+              value={`₱${stats.unpaidFines.toFixed(2)}`}
+              icon={() => <span className="text-3xl text-orange-400 font-bold">₱</span>}
+              iconColor=""
+            />
+
             </Link>
           </div>
 
@@ -88,7 +94,10 @@ export default async function LibrarianDashboard() {
                 href="/librarian/fines"
                 className="flex flex-col items-center justify-center p-6 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors group"
               >
-                <DollarSign className="w-8 h-8 text-accent mb-2 group-hover:scale-110 transition-transform" />
+                <span className="text-3xl text-accent mb-2 group-hover:scale-110 transition-transform font-bold">
+  ₱
+</span>
+
                 <span className="text-sm font-medium text-foreground">Manage Fines</span>
               </Link>
 
