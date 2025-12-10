@@ -14,18 +14,24 @@ function hashPassword(password: string): string {
 export async function getUsers(role?: UserRole, search?: string): Promise<User[]> {
   await requireRole(["admin"]);
 
-  let query = `SELECT * FROM users WHERE status != 'inactive'`;
+  const conditions: string[] = ["status != 'inactive'"];
+  const values: unknown[] = [];
 
-  if (role) query += ` AND role = '${role}'`;
-
-  if (search) {
-    const s = search.toLowerCase();
-    query += ` AND (LOWER(full_name) LIKE '%${s}%' OR LOWER(email) LIKE '%${s}%' OR LOWER(university_id) LIKE '%${s}%')`;
+  if (role) {
+    values.push(role);
+    conditions.push(`role = $${values.length}`);
   }
 
-  query += ` ORDER BY created_at DESC`;
+  if (search) {
+    const searchPattern = `%${search.toLowerCase()}%`;
+    values.push(searchPattern, searchPattern, searchPattern);
+    conditions.push(
+      `(LOWER(full_name) LIKE $${values.length - 2} OR LOWER(email) LIKE $${values.length - 1} OR LOWER(university_id) LIKE $${values.length})`
+    );
+  }
 
-  const result = await sql.unsafe(query);
+  const query = `SELECT * FROM users WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC`;
+  const result = await sql.unsafe(query, values);
   return result as User[];
 }
 
@@ -161,14 +167,14 @@ export async function updateUserStatus(id: string, status: UserStatus) {
 }
 
 /* ======================================================
-   PERMANENT DELETE USER
+   DELETE USER (SOFT DELETE - SETS STATUS TO INACTIVE)
 ====================================================== */
 export async function deleteUser(id: string): Promise<{ error: string | null }> {
   try {
     await requireRole(["admin"]);
 
-    // Hard delete user
-    await sql`DELETE FROM users WHERE id = ${id}`;
+    // Soft delete - set status to inactive so user is filtered out by getUsers()
+    await sql`UPDATE users SET status = 'inactive' WHERE id = ${id}`;
 
     return { error: null };
   } catch (err) {
@@ -178,16 +184,16 @@ export async function deleteUser(id: string): Promise<{ error: string | null }> 
 }
 
 /* ======================================================
-   USER STATS
+   USER STATS (EXCLUDES INACTIVE USERS)
 ====================================================== */
 export async function getUserStats() {
   const stats = await sql`
     SELECT 
-      COUNT(*) AS total_users,
-      COUNT(*) FILTER (WHERE role = 'student') AS students,
-      COUNT(*) FILTER (WHERE role = 'faculty') AS faculty,
-      COUNT(*) FILTER (WHERE role = 'librarian') AS librarians,
-      COUNT(*) FILTER (WHERE role = 'admin') AS admins,
+      COUNT(*) FILTER (WHERE status != 'inactive') AS total_users,
+      COUNT(*) FILTER (WHERE role = 'student' AND status != 'inactive') AS students,
+      COUNT(*) FILTER (WHERE role = 'faculty' AND status != 'inactive') AS faculty,
+      COUNT(*) FILTER (WHERE role = 'librarian' AND status != 'inactive') AS librarians,
+      COUNT(*) FILTER (WHERE role = 'admin' AND status != 'inactive') AS admins,
       COUNT(*) FILTER (WHERE status = 'active') AS active_users
     FROM users
   `;
