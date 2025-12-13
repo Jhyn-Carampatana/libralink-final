@@ -3,7 +3,7 @@ export const revalidate = 0;
 
 import { Header } from "@/components/header"
 import { BookCard } from "@/components/book-card"
-import { getFeaturedBook, getPopularBooks } from "@/lib/actions/book-actions"
+import { getFeaturedBook, getBooks } from "@/lib/actions/book-actions"
 import { getSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { BorrowBookButton } from "@/components/borrow-book-button"
@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
-  const [featuredBook, popularBooks] = await Promise.all([getFeaturedBook(), getPopularBooks(6)])
+  const [featuredBook, allBooks] = await Promise.all([getFeaturedBook(), getBooks()])
 
   // Fallback if no featured book
   const displayBook = featuredBook || {
@@ -92,13 +92,13 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Popular Books Section */}
+        {/* All Books Section */}
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-foreground mb-8">Popular Books</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8">All Books</h2>
 
-          {popularBooks.length > 0 ? (
+          {allBooks.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-              {popularBooks.map((book) => {
+              {allBooks.map((book) => {
                 const b = book as any
                 return (
                   <BookCard
