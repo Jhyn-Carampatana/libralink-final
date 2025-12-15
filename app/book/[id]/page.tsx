@@ -4,7 +4,7 @@ export const revalidate = 0;
 import { redirect } from "next/navigation"
 import { Header } from "@/components/header"
 import { BookCard } from "@/components/book-card"
-import { getBookById, getPopularBooks } from "@/lib/actions/book-actions"
+import { getBookById, getBooks } from "@/lib/actions/book-actions"
 import { BorrowBookButton } from "@/components/borrow-book-button"
 
 export default async function BookDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,8 +15,8 @@ export default async function BookDetailPage({ params }: { params: Promise<{ id:
     redirect("/dashboard")
   }
 
-  const popularBooks = await getPopularBooks(6)
-  const otherBooks = popularBooks.filter((b) => b.id !== book.id)
+  const allBooks = await getBooks()
+  const otherBooks = allBooks.filter((b) => b.id !== book.id)
 
   const b = book as any
   const authorName = b.author_name || book.authors?.[0]?.name || "Unknown Author"
@@ -77,7 +77,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-foreground mb-8">Popular Books</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8">All Books</h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {otherBooks.map((pb) => {
